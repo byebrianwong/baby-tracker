@@ -4,22 +4,33 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ThemeProvider, useLoadFonts } from '@/theme';
+
 SplashScreen.preventAutoHideAsync();
 
 /**
- * Root layout. A bare Stack for the Phase 0 scaffold — the real tab shell
- * (Home / Insights / Baby / More) and ThemeProvider are built in P0-3 and P0-7.
+ * Root layout. Loads the three type families, then wraps the app in the theme
+ * system (Day / Dark / Night). A bare Stack for now — the real tab shell is P0-7.
  */
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useLoadFonts();
+
   useEffect(() => {
-    // Nothing to load yet; hide the splash immediately. Fonts + theme land in P0-3.
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <ThemeProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

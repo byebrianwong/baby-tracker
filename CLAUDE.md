@@ -36,7 +36,9 @@ Parents quit trackers that are slow. Protect the core-log loop above all else:
 ## Build decisions (verified at scaffold time — 2026-07-08)
 - **Expo SDK 57** (`expo` / `expo-router` 57.x). Turbo 2.10.x, Vitest 4.x.
 - **Legend-State: pin v3 beta (`@legendapp/state@^3.0.0-beta`).** The stable `latest` tag is still v2 (2.1.x), but the whole local-first architecture (P0-6) is built around v3's Supabase sync plugin (`syncedSupabase`), which is a v3 feature. v3 beta is mature and widely used. **Fallback if it proves unstable at P0-6: WatermelonDB or PowerSync** (documented escape hatch from the spec §3.2). Re-evaluate at Wave 3.
-- **Supabase target: local (`supabase start`, Docker) for the build**, hosted project before real-device testing. NOTE: Docker is not yet installed on this machine — install Docker Desktop (or use a hosted Supabase project) before P0-2 (Wave 2).
+- **Supabase: SHARED hosted project `ssmiunjctsigikbwdfpc`** (also used by the `second-guess` app; consolidated to save cost). Baby Bean lives entirely in its own **`baby_bean` Postgres schema** so it never touches second-guess's `public` tables. Client targets the schema via `db: { schema: 'baby_bean' }`. Migration applied by hand via the dashboard SQL editor (the shared migration history has second-guess's `0001`–`0004`, so `supabase db push` is avoided; our migration uses a timestamp filename). The `baby_bean` schema must be added to Dashboard → API → Exposed schemas.
+- **Theme (P0-3): lightweight React Context `ThemeProvider`**, not Unistyles/Tamagui. Tokens (`packages/config/tokens.json`) stay the single source of truth; a context provider gives RN+Web+Expo-Go parity with zero native deps and satisfies the day/dark/night switch. Swappable later behind the stable `useTheme()` API if perf ever needs it.
+- **Typed routes:** `experiments.typedRoutes` is on; `.expo/types/router.d.ts` is regenerated on `expo start`. If `pnpm typecheck` errors on a new route's `Href`, boot the dev server once to refresh it.
 
 ## Monorepo layout and where things go
 ```

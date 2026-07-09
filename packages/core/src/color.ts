@@ -47,3 +47,12 @@ export function withAlpha(hex: string, alpha: number): string {
   const a = Math.min(Math.max(alpha, 0), 1);
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
+
+/**
+ * Perceived-brightness test (YIQ). Used to pick a readable text/ink color to
+ * lay over a colored surface (e.g. a category-tinted Pebble).
+ */
+export function isLightColor(hex: string): boolean {
+  const [r, g, b] = parseHex(hex);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+}

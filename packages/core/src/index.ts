@@ -9,7 +9,7 @@
  * test pipeline. Real helpers arrive in P1-1 (event logic) and later phases.
  */
 
-export { mixHex, withAlpha } from './color';
+export { isLightColor, mixHex, withAlpha } from './color';
 
 /** Product name, exported so the app can prove it imports from core. */
 export const APP_NAME = 'Baby Bean' as const;

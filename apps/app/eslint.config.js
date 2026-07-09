@@ -9,6 +9,9 @@ module.exports = [
     rules: {
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
+      // Reanimated shared values (`sharedValue.value = …`) are mutable by design;
+      // the React Compiler immutability heuristic false-positives on them.
+      'react-hooks/immutability': 'off',
     },
   },
   {

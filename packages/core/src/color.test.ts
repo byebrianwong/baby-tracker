@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mixHex, withAlpha } from './color';
+import { isLightColor, mixHex, withAlpha } from './color';
 
 describe('mixHex', () => {
   it('returns the first color at ratio 1', () => {
@@ -37,5 +37,17 @@ describe('withAlpha', () => {
 
   it('clamps alpha', () => {
     expect(withAlpha('#000000', 5)).toBe('rgba(0, 0, 0, 1)');
+  });
+});
+
+describe('isLightColor', () => {
+  it('treats white and light accents as light', () => {
+    expect(isLightColor('#FFFFFF')).toBe(true);
+    expect(isLightColor('#E8A87C')).toBe(true); // feed apricot
+  });
+
+  it('treats black and the dusk-blue primary as dark', () => {
+    expect(isLightColor('#000000')).toBe(false);
+    expect(isLightColor('#4F6D8F')).toBe(false);
   });
 });

@@ -24,6 +24,11 @@ export default function Home() {
               Open theme preview →
             </Text>
           </Link>
+          <Link href="/dev/gallery">
+            <Text variant="subtitle" color="primary">
+              Open component gallery →
+            </Text>
+          </Link>
         </View>
       </SafeAreaView>
     </View>

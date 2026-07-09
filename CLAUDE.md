@@ -1,0 +1,89 @@
+# CLAUDE.md — Baby Bean (baby tracker)
+
+This file is loaded into every session. Keep it in mind on every task. Full detail lives in `docs/baby-tracker-build-spec.md`; this is the working contract.
+
+> **Product name:** "Baby Bean". (The spec was drafted under the placeholder "Lull"; treat any remaining "Lull" in the spec prose as "Baby Bean".)
+
+## What we are building
+A universal (iOS + Android + Web) newborn tracker. One Expo Router codebase, Supabase backend, local-first. Comprehensive feature set, but the product is the fast-log core. See the spec for the full picture.
+
+## Prime directive
+Parents quit trackers that are slow. Protect the core-log loop above all else:
+- Logging any core event (feed, diaper, sleep, pump) is **two taps or fewer**, one-handed, offline, instant.
+- Primary actions live in the **bottom third** of the screen (thumb zone).
+- Every action is **undoable** and **backdatable**. Parents log late constantly.
+- **No feature is allowed to slow the core-log path.** If your task would add a tap or a network wait to it, stop and flag it.
+
+## The eight principles (condensed)
+1. Speed budget: open-to-logged-feed under 3s, under 2 taps, no typing.
+2. One-thumb reachable.
+3. Offline-first: write locally and render immediately; sync in the background.
+4. Forgiving: undo everywhere, easy timestamp editing, first-class backdated entry.
+5. Calm, not cartoony (closer to Nara than Huckleberry).
+6. Usable in the dark: the Night feed mode is a real feature, not a theme.
+7. Two people, one truth: real-time caregiver sync, clean handoffs.
+8. Not a doctor: guidance from the baby's own data, never diagnosis.
+
+## Stack
+- Expo (latest stable SDK) + Expo Router, TypeScript strict.
+- Supabase: Postgres, Auth, Realtime, Storage, Edge Functions.
+- Local-first state + sync: Legend-State v3 + its Supabase sync plugin, persisted to disk. If that plugin is not stable at build time, fall back to WatermelonDB or PowerSync and note the switch.
+- Styling: design tokens (single source of truth) via Unistyles or Tamagui for RN + Web parity.
+- Notifications: expo-notifications. iOS Live Activities and widgets via `@bacons/apple-targets`. Android running timers via foreground-service ongoing notification.
+
+> Versions move fast. Confirm current Expo SDK, Legend-State, and plugin versions before scaffolding or upgrading. Do not pin from memory.
+
+## Build decisions (verified at scaffold time — 2026-07-08)
+- **Expo SDK 57** (`expo` / `expo-router` 57.x). Turbo 2.10.x, Vitest 4.x.
+- **Legend-State: pin v3 beta (`@legendapp/state@^3.0.0-beta`).** The stable `latest` tag is still v2 (2.1.x), but the whole local-first architecture (P0-6) is built around v3's Supabase sync plugin (`syncedSupabase`), which is a v3 feature. v3 beta is mature and widely used. **Fallback if it proves unstable at P0-6: WatermelonDB or PowerSync** (documented escape hatch from the spec §3.2). Re-evaluate at Wave 3.
+- **Supabase target: local (`supabase start`, Docker) for the build**, hosted project before real-device testing. NOTE: Docker is not yet installed on this machine — install Docker Desktop (or use a hosted Supabase project) before P0-2 (Wave 2).
+
+## Monorepo layout and where things go
+```
+lull/
+├── apps/app/                # the universal app
+│   └── src/
+│       ├── features/        # one folder per feature (logging, sleep, growth...)
+│       ├── components/      # shared UI (Pebble, Sheet, TimelineRow, StatusStat)
+│       ├── theme/           # ThemeProvider, night mode, token consumption
+│       ├── state/           # Legend-State stores + sync
+│       └── lib/             # thin app-level helpers
+├── packages/
+│   ├── db/                  # Supabase client, generated types, schema SQL, RLS
+│   ├── core/                # PURE logic: timers, predictions, percentiles, parsing
+│   └── config/             # tokens.json (source of truth), tsconfig, eslint
+└── supabase/               # migrations + edge functions
+```
+
+## Conventions (enforced)
+- **Logic lives in `packages/core` as pure, unit-tested functions. UI only renders.** No timer math, prediction, or formatting inside components.
+- **Design tokens are the single source of truth.** Author once in `packages/config/tokens.json`; never hardcode a hex or spacing value in a component.
+- **Data:** one `events` table for all logged activity (typed hot columns + `data` jsonb). Soft delete via `deleted_at` (powers undo and safe sync). RLS scopes everything by household membership; never trust the client.
+- **Writes are local-first:** Legend-State store first, render, then sync. UI never blocks on the network.
+- **TypeScript strict.** Types for the DB are generated from the Supabase schema into `packages/db`, not hand-written.
+- **UI copy:** sentence case, plain verbs, say what happens ("Start feed", "Stop", "Log diaper"). Empty states invite action. Errors explain and recover. Never cutesy.
+
+## Definition of done (every task)
+- Works offline where it reasonably can.
+- Works on iOS, Android, and Web, or is explicitly scoped to a platform (e.g. Live Activities are iOS-only) and says so.
+- Meets the accessibility floor: screen-reader labels, visible focus, contrast in both themes, reduced-motion honored, dynamic type.
+- Core logic in `packages/core` with unit tests. UI only renders.
+- Does not slow the two-tap core-log path.
+
+## How to work a task
+1. Read your task file in `tasks/` fully before writing code.
+2. Stay inside the files/dirs your task **owns** (listed at the top of the task). This is how parallel sessions avoid collisions.
+3. If you need something another task owns, import its public interface; do not edit its files.
+4. Run the task's acceptance checklist before declaring done.
+
+## Gotchas
+- Live Activities and lock-screen widgets are iOS-only. Android uses an ongoing notification. Web has neither; degrade gracefully.
+- Do not add ad or data-reselling analytics SDKs. Infant data is sensitive.
+- The app is not a medical device. Prediction and assistant surfaces carry a plain non-diagnostic note and defer to a pediatrician.
+- Never lock in data: CSV export must always work.
+
+## Design quick reference
+- Tokens: `packages/config/tokens.json` (light "Day", dark, and "Night feed"). Consumed via `theme/`.
+- Type: Fraunces (display, sparing), Hanken Grotesk (body/UI), Geist Mono or Martian Mono (timers, tabular).
+- Shape: rounded "pebble" forms. Radii 12 / 18 / 28 / pill. Primary log buttons 64px tall. Min tap target 48px.
+- Signature: Night feed mode (ultra-dim, amber, low blue-light, oversized targets). Spend design boldness here; keep everything else quiet.

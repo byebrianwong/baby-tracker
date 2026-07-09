@@ -1,0 +1,47 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# turbo
+.turbo/
+
+# expo
+.expo/
+dist/
+web-build/
+*.orig.*
+apps/app/.expo/
+
+# native
+apps/app/ios/
+apps/app/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# env
+.env
+.env*.local
+!.env.example
+
+# supabase
+supabase/.branches/
+supabase/.temp/
+
+# testing / coverage
+coverage/
+
+# macOS
+.DS_Store
+
+# logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# editor
+.idea/
+*.swp

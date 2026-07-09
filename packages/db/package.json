@@ -10,10 +10,15 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "gen:types": "supabase gen types typescript --project-id ssmiunjctsigikbwdfpc --schema baby_bean > src/types.gen.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.1"
   },
   "devDependencies": {
     "@baby-bean/config": "workspace:*",
+    "@types/node": "^22.10.0",
     "eslint": "^9.18.0",
     "typescript": "~6.0.3"
   }

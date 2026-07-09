@@ -1,0 +1,19 @@
+# Baby Bean — Supabase config.
+# This project is SHARED with the `second-guess` app (cost consolidation).
+# Baby Bean lives entirely in its own `baby_bean` Postgres schema so it never
+# touches second-guess's `public` tables.
+project_id = "ssmiunjctsigikbwdfpc"
+
+[api]
+enabled = true
+# Expose baby_bean alongside the defaults so PostgREST/Realtime can serve it.
+# `public` and `graphql_public` are kept for second-guess. This list must also
+# be set in Dashboard → Project Settings → API → "Exposed schemas" for the
+# hosted project (config here applies to `supabase config push` / local dev).
+schemas = ["public", "graphql_public", "baby_bean"]
+extra_search_path = ["public", "extensions", "baby_bean"]
+max_rows = 1000
+
+[db]
+# Postgres major version of the shared hosted project.
+major_version = 15

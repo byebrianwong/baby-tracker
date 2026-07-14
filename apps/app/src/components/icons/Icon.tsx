@@ -16,7 +16,10 @@ export type IconName =
   | 'undo'
   | 'clock'
   | 'chevronRight'
-  | 'note';
+  | 'note'
+  | 'home'
+  | 'baby'
+  | 'menu';
 
 export type IconProps = {
   name: IconName;
@@ -124,5 +127,22 @@ function renderPaths(name: IconName, c: PathCommon) {
           <Path {...c} d="M9 10h6M9 14h6" />
         </>
       );
+    case 'home':
+      return (
+        <>
+          <Path {...c} d="M4 11l8-6 8 6" />
+          <Path {...c} d="M6 10v9h12v-9" />
+        </>
+      );
+    case 'baby':
+      return (
+        <>
+          <Circle {...c} cx={12} cy={11} r={7} />
+          <Path {...c} d="M9.5 10h.01M14.5 10h.01" />
+          <Path {...c} d="M9.5 14a3.5 3.5 0 0 0 5 0" />
+        </>
+      );
+    case 'menu':
+      return <Path {...c} d="M4 7h16M4 12h16M4 17h16" />;
   }
 }

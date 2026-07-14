@@ -10,6 +10,24 @@
  */
 
 export { isLightColor, mixHex, withAlpha } from './color';
+export {
+  type BreastSide,
+  computeDurationSeconds,
+  defaultBottleMl,
+  type DiaperContents,
+  elapsedSeconds,
+  type EventLike,
+  type EventType,
+  formatClockTime,
+  formatDuration,
+  isEndAfterStart,
+  minutesAgo,
+  nextBreastSide,
+  startTimedEvent,
+  type StartTimedOpts,
+  stopTimedEvent,
+  summarizeEvent,
+} from './events';
 
 /** Product name, exported so the app can prove it imports from core. */
 export const APP_NAME = 'Baby Bean' as const;

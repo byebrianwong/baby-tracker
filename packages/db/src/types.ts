@@ -241,6 +241,10 @@ export type Database = {
         Args: { name: string };
         Returns: Database['baby_bean']['Tables']['households']['Row'];
       };
+      accept_invite: {
+        Args: { invite_code: string };
+        Returns: Database['baby_bean']['Tables']['households']['Row'];
+      };
       is_household_member: {
         Args: { hh: string; role_min?: string };
         Returns: boolean;

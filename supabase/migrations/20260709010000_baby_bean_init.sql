@@ -167,6 +167,39 @@ begin
 end;
 $$;
 
+-- Join a household via invite code. SECURITY DEFINER so a not-yet-member can
+-- read the invite and insert their own membership (RLS would otherwise block it).
+create or replace function baby_bean.accept_invite(invite_code text)
+returns baby_bean.households
+language plpgsql
+security definer
+set search_path = baby_bean, public
+as $$
+declare
+  inv baby_bean.household_invites;
+  hh  baby_bean.households;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
+  select * into inv from baby_bean.household_invites
+    where code = accept_invite.invite_code
+    for update;
+  if inv.id is null then
+    raise exception 'invalid invite code';
+  end if;
+  if inv.expires_at is not null and inv.expires_at < now() then
+    raise exception 'invite expired';
+  end if;
+  insert into baby_bean.household_members (household_id, user_id, role)
+    values (inv.household_id, auth.uid(), inv.role)
+    on conflict (household_id, user_id) do nothing;
+  update baby_bean.household_invites set accepted_by = auth.uid() where id = inv.id;
+  select * into hh from baby_bean.households where id = inv.household_id;
+  return hh;
+end;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- Triggers: keep events.household_id consistent + bump updated_at
 -- ---------------------------------------------------------------------------

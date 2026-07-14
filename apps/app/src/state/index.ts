@@ -1,3 +1,4 @@
+export { type NewChild, useChildActions } from './children';
 export {
   type DateRange,
   type EventPatch,
@@ -5,6 +6,7 @@ export {
   useChildren,
   useEventActions,
   useEvents,
+  useHasChild,
   useHouseholdStore,
 } from './events';
 export { getHouseholdStore, type HouseholdStore } from './householdStore';

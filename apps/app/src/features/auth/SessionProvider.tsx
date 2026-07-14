@@ -15,6 +15,13 @@ import { supabase } from './supabaseClient';
 
 const ACTIVE_HH_KEY = 'baby-bean.activeHouseholdId';
 
+/**
+ * Dev-only: force a local household so the offline-first log loop can be driven
+ * without the backend (no auth, no DB). Enabled only in dev builds AND only when
+ * EXPO_PUBLIC_DEV_LOCAL_HH is set — it is inert in production.
+ */
+const DEV_LOCAL_HH = __DEV__ ? (process.env.EXPO_PUBLIC_DEV_LOCAL_HH ?? null) : null;
+
 export type AuthResult = { error: string | null };
 
 type SessionContextValue = {
@@ -33,6 +40,8 @@ type SessionContextValue = {
   joinHousehold: (code: string) => Promise<AuthResult>;
   /** Re-fetch the user's households (after an external change). */
   refreshHouseholds: () => Promise<void>;
+  /** True in the dev-only local harness (no real session). */
+  devLocal: boolean;
 };
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -42,10 +51,14 @@ function messageOf(error: unknown): string {
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!DEV_LOCAL_HH);
   const [session, setSession] = useState<Session | null>(null);
-  const [households, setHouseholds] = useState<HouseholdRow[]>([]);
-  const [activeHouseholdId, setActiveHouseholdId] = useState<string | null>(null);
+  const [households, setHouseholds] = useState<HouseholdRow[]>(
+    DEV_LOCAL_HH
+      ? [{ id: DEV_LOCAL_HH, name: 'Dev household', created_at: new Date().toISOString(), created_by: null }]
+      : [],
+  );
+  const [activeHouseholdId, setActiveHouseholdId] = useState<string | null>(DEV_LOCAL_HH);
 
   const loadHouseholds = useCallback(async (): Promise<HouseholdRow[]> => {
     const { data, error } = await supabase.from('households').select('*').order('created_at');
@@ -71,6 +84,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   // Initial session + auth state subscription.
   useEffect(() => {
+    if (DEV_LOCAL_HH) return; // dev harness: no real auth
     let active = true;
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return;
@@ -171,6 +185,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       createHousehold,
       joinHousehold,
       refreshHouseholds,
+      devLocal: DEV_LOCAL_HH != null,
     }),
     [
       loading,

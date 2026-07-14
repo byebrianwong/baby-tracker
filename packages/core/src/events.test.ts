@@ -7,6 +7,7 @@ import {
   type EventLike,
   formatClockTime,
   formatDuration,
+  formatStopwatch,
   isEndAfterStart,
   minutesAgo,
   nextBreastSide,
@@ -54,6 +55,12 @@ describe('time helpers', () => {
     expect(formatDuration(18 * 60)).toBe('18 min');
     expect(formatDuration(100 * 60)).toBe('1h 40m');
     expect(formatDuration(0)).toBe('0s');
+  });
+
+  it('formats a live stopwatch', () => {
+    expect(formatStopwatch(5)).toBe('00:05');
+    expect(formatStopwatch(134)).toBe('02:14');
+    expect(formatStopwatch(3922)).toBe('1:05:22');
   });
 
   it('formats the clock in 12-hour time', () => {

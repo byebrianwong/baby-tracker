@@ -14,12 +14,13 @@ import { supabase } from '@/features/auth';
  * Conflict rules (spec §4.5):
  *   - `fieldUpdatedAt` → last-write-wins on edits, and it stamps the delete so a
  *     stale edit (older updated_at) never resurrects a deleted row.
- *   - `changesSince: 'last-sync'` → only fetch rows changed since the last sync.
  *
- * NOTE: we deliberately do NOT set `fieldDeleted`. Legend-State's soft-delete
- * removes the row from the local store, which would break undo (a prime-directive
- * requirement). Instead `deleted_at` is a normal column: soft delete is an update,
- * undo clears it, and `useEvents` filters deleted rows out of the timeline.
+ * NOTE: we deliberately do NOT set `fieldDeleted` (which would remove the row
+ * from the local store and break undo — a prime-directive requirement). Instead
+ * `deleted_at` is a normal synced column: soft delete is an update, undo clears
+ * it, and `useEvents` filters deleted rows out of the timeline. That rules out
+ * `changesSince: 'last-sync'` (which requires fieldDeleted), so we sync the full
+ * set each time — fine for a newborn tracker's data volumes.
  */
 export const syncedBabyBean = configureSynced(syncedSupabase, {
   supabase,
@@ -29,7 +30,7 @@ export const syncedBabyBean = configureSynced(syncedSupabase, {
   generateId: () => Crypto.randomUUID(),
   fieldCreatedAt: 'created_at',
   fieldUpdatedAt: 'updated_at',
-  changesSince: 'last-sync',
+  changesSince: 'all',
   // Subscribe to Realtime so a second caregiver's changes arrive live.
   realtime: true,
 });

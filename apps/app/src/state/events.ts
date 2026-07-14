@@ -6,13 +6,21 @@ import {
   type EventType,
   type Json,
 } from '@baby-bean/db';
-import { use$ } from '@legendapp/state/react';
+import { observable } from '@legendapp/state';
 import * as Crypto from 'expo-crypto';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSession } from '@/features/auth';
 
 import { getHouseholdStore, type HouseholdStore } from './householdStore';
+
+// A stable, plain (non-synced) empty store used when there is no active
+// household. Reads always target a real observable so `use$` keeps a stable
+// hook signature (passing undefined changes React's hook count → crash).
+const EMPTY_STORE: HouseholdStore = {
+  events$: observable<Record<string, EventRow>>({}),
+  children$: observable<Record<string, ChildRow>>({}),
+};
 
 /** Fields a caller provides to create an event. Server/derived fields are set here. */
 export type NewEvent = {
@@ -51,23 +59,39 @@ function activeList<T>(record: Record<string, T> | undefined): T[] {
  * on local writes and on synced remote changes. `range` filters by started_at.
  */
 export function useEvents(range?: DateRange): EventRow[] {
-  const from = range?.from;
-  const to = range?.to;
   const store = useHouseholdStore();
-  const record = use$(store?.events$);
-  return useMemo(() => {
-    let list = activeList<EventRow>(record);
-    if (from) list = list.filter((e) => e.started_at >= from);
-    if (to) list = list.filter((e) => e.started_at <= to);
-    return list.sort((a, b) => b.started_at.localeCompare(a.started_at));
-  }, [record, from, to]);
+  // `.get()` (tracked by the enclosing observer() component) instead of use$,
+  // whose hook signature is unstable on a synced observable.
+  const record = (store ?? EMPTY_STORE).events$.get();
+  let list = activeList<EventRow>(record);
+  if (range?.from) list = list.filter((e) => String(e.started_at) >= range.from!);
+  if (range?.to) list = list.filter((e) => String(e.started_at) <= range.to!);
+  // ISO timestamps sort chronologically as strings; coerce defensively.
+  return list.sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)));
 }
 
 /** Non-deleted children for the active household. */
 export function useChildren(): ChildRow[] {
   const store = useHouseholdStore();
-  const record = use$(store?.children$);
-  return useMemo(() => activeList<ChildRow>(record), [record]);
+  return activeList<ChildRow>((store ?? EMPTY_STORE).children$.get());
+}
+
+/**
+ * Whether the active household has a child. Uses a manual observable
+ * subscription (stable useState + useEffect hook signature) rather than
+ * `use$`/`observer`, because it runs in the route guard — a hot component where
+ * a conditional reactive hook would trip React's rules-of-hooks.
+ */
+export function useHasChild(): boolean {
+  const store = useHouseholdStore();
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    const target = store ?? EMPTY_STORE;
+    const compute = () => setHas(activeList<ChildRow>(target.children$.get()).length > 0);
+    compute();
+    return target.children$.onChange(compute);
+  }, [store]);
+  return has;
 }
 
 /**

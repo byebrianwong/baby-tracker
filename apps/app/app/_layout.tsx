@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SessionProvider, useSession } from '@/features/auth';
+import { useHasChild } from '@/state';
 import { Text, ThemeProvider, useLoadFonts, useTheme, View } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -47,9 +48,11 @@ export default function RootLayout() {
  * are exempt so the theme/component galleries stay reachable during the build.
  */
 function AuthGate({ children }: { children: ReactNode }) {
-  const { loading, session, activeHouseholdId } = useSession();
+  const { loading, session, activeHouseholdId, devLocal } = useSession();
+  const hasChild = useHasChild();
   const segments = useSegments();
   const router = useRouter();
+  const authed = session != null || devLocal;
 
   useEffect(() => {
     if (loading) return;
@@ -58,14 +61,16 @@ function AuthGate({ children }: { children: ReactNode }) {
     const inDev = first === 'dev';
     if (inDev) return;
 
-    if (!session && !inAuthGroup) {
+    if (!authed && !inAuthGroup) {
       router.replace('/(auth)/sign-in');
-    } else if (session && !activeHouseholdId && segments[1] !== 'household') {
+    } else if (authed && !activeHouseholdId && segments[1] !== 'household') {
       router.replace('/(auth)/household');
-    } else if (session && activeHouseholdId && inAuthGroup) {
+    } else if (authed && activeHouseholdId && !hasChild && segments[1] !== 'child') {
+      router.replace('/(auth)/child');
+    } else if (authed && activeHouseholdId && hasChild && inAuthGroup) {
       router.replace('/');
     }
-  }, [loading, session, activeHouseholdId, segments, router]);
+  }, [loading, authed, activeHouseholdId, hasChild, segments, router]);
 
   if (loading) return <LoadingScreen />;
   return <>{children}</>;

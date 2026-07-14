@@ -20,6 +20,7 @@ export {
   type EventType,
   formatClockTime,
   formatDuration,
+  formatStopwatch,
   isEndAfterStart,
   minutesAgo,
   nextBreastSide,

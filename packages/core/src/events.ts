@@ -71,6 +71,16 @@ export function formatDuration(seconds: number): string {
   return `${s}s`;
 }
 
+/** "02:14" / "1:05:22" — live stopwatch display for a running timer (tabular). */
+export function formatStopwatch(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const hh = Math.floor(s / 3600);
+  const mm = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+  const mmss = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
+  return hh > 0 ? `${hh}:${mmss}` : mmss;
+}
+
 /** "2:14 pm" — 12-hour clock for timeline rows. */
 export function formatClockTime(date: Date): string {
   const h = date.getHours();

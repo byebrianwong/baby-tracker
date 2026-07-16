@@ -34,11 +34,15 @@ export function useLogging() {
   const store = useHouseholdStore();
   const { addEvent, updateEvent, softDeleteEvent, undoDelete } = useEventActions();
 
-  // Non-reactive snapshot of the current (non-deleted) events, for lookups.
+  // Non-reactive, fully-plain snapshot of the current (non-deleted) events.
+  // JSON round-trip so nested fields (e.g. started_at) are primitives, not
+  // Legend-State proxies (see state/events.ts activeList).
   const currentEvents = useCallback((): EventRow[] => {
     if (!store) return [];
     const rec = (store.events$ as unknown as { peek: () => Record<string, EventRow> | undefined }).peek();
-    return rec ? Object.values(rec).filter((e) => !e.deleted_at) : [];
+    if (!rec) return [];
+    const plain = JSON.parse(JSON.stringify(rec)) as Record<string, EventRow>;
+    return Object.values(plain).filter((e) => !e.deleted_at);
   }, [store]);
 
   const logInstant = useCallback(

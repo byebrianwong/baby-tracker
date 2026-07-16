@@ -3,9 +3,10 @@ import { observer } from '@legendapp/state/react';
 import { useState } from 'react';
 import { StyleSheet, View as RNView } from 'react-native';
 
-import { Icon, Pebble, UndoBar } from '@/components';
+import { Icon, Pebble } from '@/components';
 import { useLogging, useNextBreastSide, useRunningTimers } from '@/features/logging/data';
 import { DiaperSheet } from '@/features/logging/diaper/DiaperSheet';
+import { useUndo } from '@/features/logging/feedback/UndoController';
 import { type AccentName, useTheme, View } from '@/theme';
 
 import { useTicker } from './useTicker';
@@ -33,12 +34,12 @@ const ITEMS: Item[] = [
 export const QuickLogBar = observer(function QuickLogBar() {
   const theme = useTheme();
   const { startTimer, stopTimer, logInstant, deleteEvent } = useLogging();
+  const { showUndo } = useUndo();
   const running = useRunningTimers();
   const nextSide = useNextBreastSide();
   const now = useTicker(running.length > 0);
 
   const [diaperOpen, setDiaperOpen] = useState(false);
-  const [undo, setUndo] = useState<{ id: string; message: string } | null>(null);
 
   const runningOf = (type: EventType) => running.find((e) => e.type === type);
 
@@ -46,16 +47,16 @@ export const QuickLogBar = observer(function QuickLogBar() {
     const active = runningOf(type);
     if (active) {
       stopTimer(active.id);
-      setUndo({ id: active.id, message: 'Stopped' });
+      showUndo('Logged', () => deleteEvent(active.id));
       return;
     }
     const id = startTimer(type, type === 'breast' ? { breastSide: nextSide } : {});
-    if (id) setUndo({ id, message: type === 'breast' ? `Feed started · ${nextSide}` : 'Started' });
+    if (id) showUndo(type === 'breast' ? `Feed started · ${nextSide}` : 'Started', () => deleteEvent(id));
   };
 
   const onDiaper = (contents: DiaperContents) => {
     const id = logInstant('diaper', { diaper_contents: contents });
-    if (id) setUndo({ id, message: `Logged ${contents} diaper` });
+    if (id) showUndo(`Logged ${contents} diaper`, () => deleteEvent(id));
   };
 
   return (
@@ -93,17 +94,6 @@ export const QuickLogBar = observer(function QuickLogBar() {
       </View>
 
       <DiaperSheet visible={diaperOpen} onClose={() => setDiaperOpen(false)} onSelect={onDiaper} />
-
-      <UndoBar
-        visible={undo != null}
-        message={undo?.message ?? ''}
-        onAction={() => {
-          // Removes the just-logged event (soft delete). Full edit-then-undo is P1-5.
-          if (undo) deleteEvent(undo.id);
-          setUndo(null);
-        }}
-        onDismiss={() => setUndo(null)}
-      />
     </>
   );
 });

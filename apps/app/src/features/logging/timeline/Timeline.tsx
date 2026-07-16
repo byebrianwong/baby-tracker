@@ -1,19 +1,24 @@
 import { formatClockTime, summarizeEvent } from '@baby-bean/core';
+import { type EventRow } from '@baby-bean/db';
 import { observer } from '@legendapp/state/react';
 import { type ReactNode } from 'react';
 import { FlatList, Pressable, View as RNView } from 'react-native';
 
 import { Icon, TimelineRow } from '@/components';
 import { useLogging, useTimeline } from '@/features/logging/data';
+import { useUndo } from '@/features/logging/feedback/UndoController';
 import { Text, useTheme, View } from '@/theme';
 
 import { eventVisuals } from './visuals';
 
-/** The day's events, newest first. Virtualized; tap-to-edit lands in P1-5. */
-export const Timeline = observer(function Timeline({ header }: { header?: ReactNode }) {
+export type TimelineProps = { header?: ReactNode; onEventPress?: (event: EventRow) => void };
+
+/** The day's events, newest first. Virtualized; tap opens the editor, swipe deletes. */
+export const Timeline = observer(function Timeline({ header, onEventPress }: TimelineProps) {
   const theme = useTheme();
   const events = useTimeline();
-  const { deleteEvent } = useLogging();
+  const { deleteEvent, undo } = useLogging();
+  const { showUndo } = useUndo();
 
   return (
     <FlatList
@@ -46,11 +51,15 @@ export const Timeline = observer(function Timeline({ header }: { header?: ReactN
             icon={v.icon}
             time={formatClockTime(new Date(item.started_at))}
             title={summarizeEvent(item)}
+            onPress={onEventPress ? () => onEventPress(item) : undefined}
             renderRightActions={() => (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Delete"
-                onPress={() => deleteEvent(item.id)}
+                onPress={() => {
+                  deleteEvent(item.id);
+                  showUndo('Deleted', () => undo(item.id));
+                }}
                 style={{
                   width: theme.size.pebblePrimary + theme.space.lg,
                   alignItems: 'center',

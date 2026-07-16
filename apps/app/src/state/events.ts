@@ -51,7 +51,12 @@ export function useHouseholdStore(): HouseholdStore | null {
 
 function activeList<T>(record: Record<string, T> | undefined): T[] {
   if (!record) return [];
-  return Object.values(record).filter((r) => !(r as { deleted_at?: string | null }).deleted_at);
+  // Normalize to fully-plain objects: Legend-State can hand back proxies for
+  // just-written rows, and reading a nested field (e.g. started_at) off a proxy
+  // yields a non-primitive that breaks String comparisons downstream (and the
+  // pure core helpers). A JSON round-trip forces plain values everywhere.
+  const plain = JSON.parse(JSON.stringify(record)) as Record<string, T>;
+  return Object.values(plain).filter((r) => !(r as { deleted_at?: string | null }).deleted_at);
 }
 
 /**
@@ -60,14 +65,13 @@ function activeList<T>(record: Record<string, T> | undefined): T[] {
  */
 export function useEvents(range?: DateRange): EventRow[] {
   const store = useHouseholdStore();
-  // `.get()` (tracked by the enclosing observer() component) instead of use$,
-  // whose hook signature is unstable on a synced observable.
+  // `.get()` tracks changes in the enclosing observer(); activeList normalizes
+  // the value to plain objects (see there).
   const record = (store ?? EMPTY_STORE).events$.get();
   let list = activeList<EventRow>(record);
-  if (range?.from) list = list.filter((e) => String(e.started_at) >= range.from!);
-  if (range?.to) list = list.filter((e) => String(e.started_at) <= range.to!);
-  // ISO timestamps sort chronologically as strings; coerce defensively.
-  return list.sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)));
+  if (range?.from) list = list.filter((e) => e.started_at >= range.from!);
+  if (range?.to) list = list.filter((e) => e.started_at <= range.to!);
+  return list.sort((a, b) => b.started_at.localeCompare(a.started_at));
 }
 
 /** Non-deleted children for the active household. */
@@ -87,7 +91,7 @@ export function useHasChild(): boolean {
   const [has, setHas] = useState(false);
   useEffect(() => {
     const target = store ?? EMPTY_STORE;
-    const compute = () => setHas(activeList<ChildRow>(target.children$.get()).length > 0);
+    const compute = () => setHas(activeList<ChildRow>(target.children$.peek()).length > 0);
     compute();
     return target.children$.onChange(compute);
   }, [store]);

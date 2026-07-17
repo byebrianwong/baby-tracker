@@ -1,4 +1,4 @@
-export { type NewChild, useChildActions } from './children';
+export { type ChildPatch, type NewChild, useChildActions } from './children';
 export {
   type DateRange,
   type EventPatch,

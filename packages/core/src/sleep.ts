@@ -26,6 +26,15 @@ export function ageInWeeks(dob: string, now: Date): number {
   return Math.max(0, Math.floor(ms / (7 * 24 * 3600 * 1000)));
 }
 
+/** A human age label from a date of birth: "newborn" / "6 weeks" / "5 months". */
+export function formatAge(dob: string, now: Date): string {
+  const weeks = ageInWeeks(dob, now);
+  if (weeks < 1) return 'newborn';
+  if (weeks < 12) return `${weeks} week${weeks === 1 ? '' : 's'}`;
+  const months = Math.floor((now.getTime() - new Date(dob).getTime()) / (30.44 * 24 * 3600 * 1000));
+  return `${months} month${months === 1 ? '' : 's'}`;
+}
+
 /** The wake window for a given age in weeks. */
 export function wakeWindowForAge(weeks: number): { minMinutes: number; maxMinutes: number } {
   const band = WAKE_WINDOWS.find((b) => weeks <= b.maxWeeks) ?? WAKE_WINDOWS[WAKE_WINDOWS.length - 1]!;

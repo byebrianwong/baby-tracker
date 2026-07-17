@@ -8,7 +8,12 @@ import { useHouseholdStore } from './events';
 
 export type NewChild = { name: string; dob?: string | null; sex?: string | null };
 
-type ChildNode = { set: (value: ChildRow) => void };
+export type ChildPatch = { name?: string; dob?: string | null; sex?: string | null };
+
+type ChildNode = {
+  set: (value: ChildRow) => void;
+  assign: (patch: Partial<ChildRow>) => void;
+};
 
 /** Local-first child creation (writes to the synced children store). */
 export function useChildActions() {
@@ -34,5 +39,13 @@ export function useChildActions() {
     [store, activeHouseholdId],
   );
 
-  return { addChild };
+  const updateChild = useCallback(
+    (id: string, patch: ChildPatch) => {
+      if (!store) return;
+      (store.children$ as unknown as Record<string, ChildNode>)[id]!.assign(patch);
+    },
+    [store],
+  );
+
+  return { addChild, updateChild };
 }

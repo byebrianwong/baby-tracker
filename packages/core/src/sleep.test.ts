@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { type EventLike } from './events';
 import {
   ageInWeeks,
+  formatAge,
   predictNextSleep,
   trailingAverageWakeMinutes,
   wakeWindowForAge,
@@ -20,6 +21,14 @@ describe('ageInWeeks', () => {
   });
   it('clamps a future dob to 0', () => {
     expect(ageInWeeks('2026-12-01', new Date('2026-06-01T00:00:00Z'))).toBe(0);
+  });
+});
+
+describe('formatAge', () => {
+  it('labels newborns, weeks, and months', () => {
+    expect(formatAge('2026-06-30', new Date('2026-07-02T00:00:00Z'))).toBe('newborn');
+    expect(formatAge('2026-06-01', new Date('2026-06-29T00:00:00Z'))).toBe('4 weeks');
+    expect(formatAge('2026-01-01', new Date('2026-07-01T00:00:00Z'))).toBe('5 months');
   });
 });
 

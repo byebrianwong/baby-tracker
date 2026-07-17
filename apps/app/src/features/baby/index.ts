@@ -1,0 +1,1 @@
+export { BabyScreen } from './BabyScreen';

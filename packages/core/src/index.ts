@@ -32,6 +32,7 @@ export {
 export { dayBounds, type DaySummary, summarizeRange } from './insights';
 export {
   ageInWeeks,
+  formatAge,
   predictNextSleep,
   type SleepPrediction,
   trailingAverageWakeMinutes,

@@ -10,6 +10,7 @@ import { EventEditor, LogEarlier } from '@/features/logging/edit';
 import { UndoProvider } from '@/features/logging/feedback/UndoController';
 import { QuickLogBar } from '@/features/logging/quicklog';
 import { StatusStrip } from '@/features/logging/status/StatusStrip';
+import { useTimerPersistence } from '@/features/logging/timed/persistence';
 import { Timeline } from '@/features/logging/timeline/Timeline';
 import { Text, useTheme, View } from '@/theme';
 
@@ -26,6 +27,9 @@ export const HomeScreen = observer(function HomeScreen() {
 
   const [editing, setEditing] = useState<EventRow | null>(null);
   const [earlierOpen, setEarlierOpen] = useState(false);
+
+  // Surface running timers to the lock screen (native only; no-op on web).
+  useTimerPersistence();
 
   const header = (
     <View style={{ gap: theme.space.xl, marginBottom: theme.space.lg }}>

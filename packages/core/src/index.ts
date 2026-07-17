@@ -29,6 +29,14 @@ export {
   stopTimedEvent,
   summarizeEvent,
 } from './events';
+export { dayBounds, type DaySummary, summarizeRange } from './insights';
+export {
+  ageInWeeks,
+  predictNextSleep,
+  type SleepPrediction,
+  trailingAverageWakeMinutes,
+  wakeWindowForAge,
+} from './sleep';
 
 /** Product name, exported so the app can prove it imports from core. */
 export const APP_NAME = 'Baby Bean' as const;

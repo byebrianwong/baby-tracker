@@ -192,16 +192,21 @@ export function summarizeEvent(event: EventLike): string {
       if (running) return 'Sleeping · in progress';
       return dur ? `Slept ${dur}` : 'Sleep';
     case 'solids': {
-      const foods = readData(event).foods;
+      const { food, foods } = readData(event);
+      if (typeof food === 'string' && food.trim()) return `Solids · ${food.trim()}`;
       return Array.isArray(foods) && foods.length > 0 ? `Solids · ${foods.join(', ')}` : 'Solids';
     }
     case 'medication': {
-      const name = readData(event).name;
-      return name ? `Medication · ${String(name)}` : 'Medication';
+      const { name, amount, unit } = readData(event);
+      if (!name) return 'Medication';
+      const dose = typeof amount === 'number' ? ` · ${amount} ${unit ? String(unit) : 'ml'}` : '';
+      return `${String(name)}${dose}`;
     }
     case 'temperature': {
-      const t = readData(event).temp_c;
-      return t != null ? `Temp ${t}°C` : 'Temperature';
+      const { temp_c: t, unit } = readData(event);
+      if (typeof t !== 'number') return 'Temperature';
+      // Read it back in the scale it was typed in.
+      return unit === 'f' ? `Temp ${(t * 1.8 + 32).toFixed(1)} °F` : `Temp ${t.toFixed(1)} °C`;
     }
     case 'growth': {
       const d = readData(event);
@@ -214,6 +219,7 @@ export function summarizeEvent(event: EventLike): string {
       return label ? `Milestone · ${String(label)}` : 'Milestone';
     }
     case 'tummy_time':
+      if (running) return 'Tummy time · in progress';
       return dur ? `Tummy time · ${dur}` : 'Tummy time';
     case 'bath':
       return 'Bath';

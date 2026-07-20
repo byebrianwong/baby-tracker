@@ -171,9 +171,32 @@ describe('summarizeEvent', () => {
 
   it('reads type-specific data for growth and medication', () => {
     expect(summarizeEvent({ type: 'growth', started_at: 'x', data: { weight_g: 4200 } })).toBe('Weight 4.20 kg');
-    expect(summarizeEvent({ type: 'medication', started_at: 'x', data: { name: 'Vitamin D' } })).toBe(
-      'Medication · Vitamin D',
+    // The row already carries a medication icon, so the drug name leads.
+    expect(summarizeEvent({ type: 'medication', started_at: 'x', data: { name: 'Vitamin D' } })).toBe('Vitamin D');
+    expect(
+      summarizeEvent({ type: 'medication', started_at: 'x', data: { name: 'Tylenol', amount: 2.5, unit: 'ml' } }),
+    ).toBe('Tylenol · 2.5 ml');
+  });
+
+  it('reads a temperature back in the scale it was entered', () => {
+    expect(summarizeEvent({ type: 'temperature', started_at: 'x', data: { temp_c: 37.42 } })).toBe('Temp 37.4 °C');
+    expect(summarizeEvent({ type: 'temperature', started_at: 'x', data: { temp_c: 37, unit: 'f' } })).toBe(
+      'Temp 98.6 °F',
     );
+    expect(summarizeEvent({ type: 'temperature', started_at: 'x', data: {} })).toBe('Temperature');
+  });
+
+  it('names the food on a solids entry', () => {
+    expect(summarizeEvent({ type: 'solids', started_at: 'x', data: { food: 'Avocado' } })).toBe('Solids · Avocado');
+    expect(summarizeEvent({ type: 'solids', started_at: 'x', data: { foods: ['pear', 'oat'] } })).toBe(
+      'Solids · pear, oat',
+    );
+    expect(summarizeEvent({ type: 'solids', started_at: 'x', data: {} })).toBe('Solids');
+  });
+
+  it('marks a running tummy time as in progress', () => {
+    expect(summarizeEvent({ type: 'tummy_time', started_at: 'x' })).toBe('Tummy time · in progress');
+    expect(summarizeEvent({ type: 'tummy_time', started_at: 'x', duration_seconds: 300 })).toBe('Tummy time · 5 min');
   });
 
   it('marks a bare timed event (no end, no duration) as in progress', () => {

@@ -8,6 +8,7 @@ import { useSession } from '@/features/auth';
 import { useActiveChild } from '@/features/logging/data';
 import { EventEditor, LogEarlier } from '@/features/logging/edit';
 import { UndoProvider } from '@/features/logging/feedback/UndoController';
+import { MoreLog } from '@/features/logging/more';
 import { QuickLogBar } from '@/features/logging/quicklog';
 import { StatusStrip } from '@/features/logging/status/StatusStrip';
 import { useTimerPersistence } from '@/features/logging/timed/persistence';
@@ -27,6 +28,7 @@ export const HomeScreen = observer(function HomeScreen() {
 
   const [editing, setEditing] = useState<EventRow | null>(null);
   const [earlierOpen, setEarlierOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   // Surface running timers to the lock screen (native only; no-op on web).
   useTimerPersistence();
@@ -40,15 +42,27 @@ export const HomeScreen = observer(function HomeScreen() {
           </Text>
           <Text variant="title">{child?.name ?? 'Today'}</Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => setEarlierOpen(true)}
-          style={{ minHeight: theme.size.tapMin, justifyContent: 'center' }}
-        >
-          <Text variant="body" color="primary">
-            Log earlier
-          </Text>
-        </Pressable>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setEarlierOpen(true)}
+            style={{ minHeight: theme.size.tapMin, justifyContent: 'center' }}
+          >
+            <Text variant="body" color="primary">
+              Log earlier
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Log something else"
+            onPress={() => setMoreOpen(true)}
+            style={{ minHeight: theme.size.tapMin, justifyContent: 'center' }}
+          >
+            <Text variant="body" color="primary">
+              Something else
+            </Text>
+          </Pressable>
+        </View>
       </View>
       <StatusStrip />
     </View>
@@ -63,6 +77,7 @@ export const HomeScreen = observer(function HomeScreen() {
         <QuickLogBar />
         <EventEditor key={editing?.id ?? 'closed'} event={editing} onClose={() => setEditing(null)} />
         <LogEarlier visible={earlierOpen} onClose={() => setEarlierOpen(false)} />
+        <MoreLog visible={moreOpen} onClose={() => setMoreOpen(false)} />
       </UndoProvider>
     </View>
   );

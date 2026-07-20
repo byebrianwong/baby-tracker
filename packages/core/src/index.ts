@@ -39,7 +39,18 @@ export {
   localParts,
   toCsv,
 } from './export';
+export { type FoodData, type FoodHistory, foodHistory, isNewFood } from './foods';
 export { dayBounds, type DaySummary, summarizeRange } from './insights';
+export {
+  dosesInWindow,
+  dosesOf,
+  type DoseStatus,
+  doseStatus,
+  formatDose,
+  type MedData,
+  medicationsGiven,
+  medKey,
+} from './meds';
 export {
   ageInWeeks,
   formatAge,
@@ -48,6 +59,7 @@ export {
   trailingAverageWakeMinutes,
   wakeWindowForAge,
 } from './sleep';
+export { cToF, formatTemp, fToC, lastTemperature, type TempData, type TempUnit } from './vitals';
 
 /** Product name, exported so the app can prove it imports from core. */
 export const APP_NAME = 'Baby Bean' as const;

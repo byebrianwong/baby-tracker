@@ -10,4 +10,5 @@ export {
   useHouseholdStore,
 } from './events';
 export { getHouseholdStore, type HouseholdStore } from './householdStore';
+export { type NewMilk, useMilkActions, useMilkStash } from './milk';
 export { syncedBabyBean } from './sync';

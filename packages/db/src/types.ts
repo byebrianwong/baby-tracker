@@ -271,4 +271,5 @@ export type TablesUpdate<T extends keyof Database['baby_bean']['Tables']> =
 
 export type EventRow = Tables<'events'>;
 export type ChildRow = Tables<'children'>;
+export type MilkInventoryRow = Tables<'milk_inventory'>;
 export type HouseholdRow = Tables<'households'>;

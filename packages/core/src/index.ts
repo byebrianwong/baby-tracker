@@ -52,6 +52,17 @@ export {
   medKey,
 } from './meds';
 export {
+  availableEntries,
+  daysOfStash,
+  formatVolume,
+  type MilkEntryLike,
+  type MilkStorage,
+  nextToUse,
+  pastWindow,
+  type StashTotals,
+  stashTotals,
+} from './milk';
+export {
   ageInWeeks,
   formatAge,
   predictNextSleep,

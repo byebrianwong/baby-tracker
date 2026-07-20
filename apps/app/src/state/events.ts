@@ -5,6 +5,7 @@ import {
   type EventRow,
   type EventType,
   type Json,
+  type MilkInventoryRow,
 } from '@baby-bean/db';
 import { observable } from '@legendapp/state';
 import * as Crypto from 'expo-crypto';
@@ -20,6 +21,7 @@ import { getHouseholdStore, type HouseholdStore } from './householdStore';
 const EMPTY_STORE: HouseholdStore = {
   events$: observable<Record<string, EventRow>>({}),
   children$: observable<Record<string, ChildRow>>({}),
+  milk$: observable<Record<string, MilkInventoryRow>>({}),
 };
 
 /** Fields a caller provides to create an event. Server/derived fields are set here. */

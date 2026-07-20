@@ -20,6 +20,7 @@ export {
   type EventType,
   type HouseholdRow,
   type Json,
+  type MilkInventoryRow,
   type ReminderKind,
   type Role,
   type StorageLocation,

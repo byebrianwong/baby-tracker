@@ -1,4 +1,4 @@
-import { type ChildRow, type EventRow } from '@baby-bean/db';
+import { type ChildRow, type EventRow, type MilkInventoryRow } from '@baby-bean/db';
 import { type Observable,observable } from '@legendapp/state';
 
 import { syncedBabyBean } from './sync';
@@ -6,6 +6,7 @@ import { syncedBabyBean } from './sync';
 export type HouseholdStore = {
   events$: Observable<Record<string, EventRow>>;
   children$: Observable<Record<string, ChildRow>>;
+  milk$: Observable<Record<string, MilkInventoryRow>>;
 };
 
 // One store per household, created lazily and reused so re-renders and multiple
@@ -18,7 +19,7 @@ const stores = new Map<string, HouseholdStore>();
  * instantiate too deeply for tsc; the returned observable is re-typed to the
  * concrete row shape so consumers stay fully typed.
  */
-function syncedCollection<T>(collection: 'events' | 'children', householdId: string): Observable<Record<string, T>> {
+function syncedCollection<T>(collection: 'events' | 'children' | 'milk_inventory', householdId: string): Observable<Record<string, T>> {
   const options = {
     collection,
     schema: 'baby_bean',
@@ -38,6 +39,7 @@ export function getHouseholdStore(householdId: string): HouseholdStore {
   const store: HouseholdStore = {
     events$: syncedCollection<EventRow>('events', householdId),
     children$: syncedCollection<ChildRow>('children', householdId),
+    milk$: syncedCollection<MilkInventoryRow>('milk_inventory', householdId),
   };
   stores.set(householdId, store);
   return store;

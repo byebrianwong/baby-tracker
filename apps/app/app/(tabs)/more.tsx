@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Pebble } from '@/components';
 import { useSession } from '@/features/auth';
+import { ExportSection } from '@/features/export';
 import { Text, type ThemePreference, useTheme, useThemeMode, View } from '@/theme';
 
 const THEME_OPTIONS: { key: ThemePreference; label: string }[] = [
@@ -56,6 +57,8 @@ export default function More() {
               })}
             </View>
           </View>
+
+          <ExportSection />
 
           <View style={{ gap: theme.space.sm }}>
             <Text variant="subtitle">Household</Text>

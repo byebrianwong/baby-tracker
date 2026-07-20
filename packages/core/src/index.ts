@@ -29,6 +29,16 @@ export {
   stopTimedEvent,
   summarizeEvent,
 } from './events';
+export {
+  CSV_COLUMNS,
+  csvEscape,
+  type CsvExportOptions,
+  eventsToCsv,
+  type ExportEvent,
+  exportFilename,
+  localParts,
+  toCsv,
+} from './export';
 export { dayBounds, type DaySummary, summarizeRange } from './insights';
 export {
   ageInWeeks,
